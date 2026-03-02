@@ -364,7 +364,7 @@ class EventEmitter {
 const emitter = new EventEmitter();
 
 // John Cage labels
-const fixedLabels = ["John", "Cage"];
+const fixedLabels = ["John", "Cage", "About"];
 const works = [
     "4′33″",
         "Sounds of Venice",
@@ -580,7 +580,7 @@ function shuffleArray(array) {
     return shuffled;
 }
 
-const allLabels = ["John", "Cage", ...works];
+const allLabels = ["John", "Cage", "About", ...works];
 let currentLabelOrder = [...allLabels]; // First cycle uses original order
 const MAX_DOTS = 10;
 let dotCounter = 0;
@@ -603,8 +603,7 @@ function getLabelForDotIndex(dotIndex) {
 function showWorkPanel(label) {
     const panel = document.getElementById('work-panel');
     if (!panel) return;
-    
-    // Show John Cage biography for 'John' or 'Cage'
+    panel.classList.remove('about-mode');
     if (label === "John" || label === "Cage") {
         const panel = document.getElementById('work-panel');
         if (!panel) return;
@@ -619,11 +618,9 @@ function showWorkPanel(label) {
         // Hide image + audio links for John/Cage bio mode
         const mainImage = panel.querySelector('.work-info-image');
         if (mainImage) {
+            mainImage.style.display = 'none';
             mainImage.style.opacity = '0';
-            setTimeout(() => {
-                mainImage.style.display = 'none';
-                mainImage.removeAttribute('src');
-            }, 400);
+            mainImage.removeAttribute('src');
         }
         // Hide secondary image
         const imageSecondary = document.getElementById('image-secondary');
@@ -640,6 +637,40 @@ function showWorkPanel(label) {
         }
         panel.style.top = '50px';
         panel.style.left = '50px';
+        panel.classList.add('active');
+        return;
+    }
+
+    if (label === "About") {
+        const yearDuration = panel.querySelector('.work-info-year-duration');
+        if (yearDuration) yearDuration.textContent = "";
+        const medium = panel.querySelector('.work-info-medium');
+        if (medium) medium.textContent = "";
+        const description = panel.querySelector('.work-info-description');
+        if (description) {
+            description.innerHTML = "<p>Indeterminate Navigation is an interactive website inspired by the work of John Cage, the American composer known for his non-deterministic approach to music. Cage embraced chance and performer agency, allowing each composition to unfold differently with every execution.</p><p>The website presents key works and ideas from his practice through an indeterminate navigation system. Instead of a fixed path, user actions generate a shifting visual and sonic composition, turning browsing into a performative experience. The interface functions as a score: it sets conditions, while each visit unfolds differently in real time.</p><p>Designed and developed by <a href=\"https://www.whosthemiller.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"about-credit-link\">Mia Miller</a> as part of Studio WWW: Advanced Web Design at Bezalel Academy of Arts and Design Jerusalem, under the guidance of Nir Shaked and Yotam Mano.</p>";
+        }
+        const performance = panel.querySelector('.work-info-performance');
+        if (performance) performance.textContent = "";
+        const mainImage = panel.querySelector('.work-info-image');
+        if (mainImage) {
+            mainImage.style.display = 'none';
+            mainImage.style.opacity = '0';
+            mainImage.removeAttribute('src');
+        }
+        const imageSecondary = document.getElementById('image-secondary');
+        if (imageSecondary) {
+            imageSecondary.style.opacity = '0';
+            setTimeout(() => {
+                imageSecondary.style.display = 'none';
+                imageSecondary.removeAttribute('src');
+            }, 400);
+        }
+        const audioLinks = panel.querySelector('.work-audio-links');
+        if (audioLinks) audioLinks.innerHTML = '';
+        panel.style.top = '50px';
+        panel.style.left = '50px';
+        panel.classList.add('about-mode');
         panel.classList.add('active');
         return;
     }
@@ -1439,11 +1470,11 @@ function renderRearrangedWithScale(scaleProgress) {
             const label = state.pointLabels[index];
             const isJohnOrCage = label === 'John' || label === 'Cage';
             
-            // Display "John Cage" if the label is "John" or "Cage"
+            // Display "John Cage" for John/Cage
             const displayLabel = isJohnOrCage ? 'John Cage' : label;
             
             // Calculate progressive font size
-            // Start: John/Cage=32, works=20
+            // Start: John/Cage=40, works=20
             // End: John/Cage=48, works=36
             const startSize = isJohnOrCage ? 40 : 20;
             const endSize = isJohnOrCage ? 48 : 36;
@@ -1578,9 +1609,9 @@ function renderRearranged() {
         }
     });
 
-    // Only show pink dots if selected label is not 'John' or 'Cage'
+    // Only show pink dots if selected label is not 'John', 'Cage', or 'About'
     const selectedLabel = state.pointLabels[state.selectedPointIndex];
-    if (selectedLabel !== 'John' && selectedLabel !== 'Cage') {
+    if (selectedLabel !== 'John' && selectedLabel !== 'Cage' && selectedLabel !== 'About') {
         // Add exactly 5 pink dots distributed across all curves connected to the selected label dot
         const connectedCurves = [];
         state.curves.forEach((curve) => {

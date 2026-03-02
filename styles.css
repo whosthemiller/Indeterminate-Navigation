@@ -326,6 +326,31 @@ body {
     color: var(--accent-color);
 }
 
+/* About panel credit link – pink hover, opens in new tab */
+.work-info-description .about-credit-link {
+    color: var(--text-color);
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.work-info-description .about-credit-link:hover {
+    color: var(--accent-color);
+}
+
+.work-info-description p {
+    margin-bottom: 1em;
+}
+
+.work-info-description p:last-child {
+    margin-bottom: 0;
+}
+
+/* About panel: space between title and first paragraph */
+.work-panel.about-mode .work-info-description {
+    margin-top: 48px;
+}
+
 /* Image / Score placeholder */
 
 /* Hide only truly empty text blocks, but always show image container */

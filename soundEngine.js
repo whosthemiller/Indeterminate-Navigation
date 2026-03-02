@@ -39,7 +39,7 @@ class CageSoundEngine {
     
     // Get a sound profile for specific labels to make some tones softer
     getSoundProfile(label) {
-        const gentle = ['John', 'Cage', 'Imaginary Landscape No. 1', 'Imaginary Landscape No. 5'];
+        const gentle = ['John', 'Cage', 'About', 'Imaginary Landscape No. 1', 'Imaginary Landscape No. 5', 'Variations I'];
         if (gentle.includes(label)) {
             return {
                 minFreq: 240,
