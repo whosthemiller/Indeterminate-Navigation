@@ -60,6 +60,11 @@ body {
     width: 100vw;
     height: 100vh;
     padding: 0;
+    cursor: none;
+}
+
+body * {
+    cursor: none !important;
 }
 
 .main {
@@ -68,7 +73,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    cursor: default;
+    cursor: none;
 }
 
 .center {
@@ -145,7 +150,17 @@ body {
 }
 
 .cursor {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
+    margin-top: -10px;
+    border-radius: 50%;
+    background: var(--text-color);
+    pointer-events: none;
+    z-index: 1000;
     display: none;
+    transform: translateZ(0);
 }
 
 .center-content {
@@ -209,7 +224,7 @@ body {
 /* Touch device optimizations */
 @media (hover: none) {
     .main {
-        cursor: default;
+        cursor: none;
     }
 }
 
@@ -318,7 +333,7 @@ body {
     line-height: 1.5;
     text-decoration: underline;
     color: var(--text-color);
-    cursor: default;
+    cursor: none;
     transition: color 0.2s ease;
 }
 
@@ -330,7 +345,7 @@ body {
 .work-info-description .about-credit-link {
     color: var(--text-color);
     text-decoration: underline;
-    cursor: pointer;
+    cursor: none;
     transition: color 0.2s ease;
 }
 

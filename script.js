@@ -847,6 +847,7 @@ const state = {
     pointLabels: [], // Store actual label text for each point
     curves: [],
     cursor: null,
+    cursorPixel: null, // free-follow position when grid snap isn't used
     isRearranged: false,
     selectedPointIndex: null,
     originalPoints: [], // Store original grid positions
@@ -1488,7 +1489,7 @@ function renderRearrangedWithScale(scaleProgress) {
             text.setAttribute('font-family', 'monospace');
             text.setAttribute('font-weight', 'bold');
             text.setAttribute('class', 'work-label');
-            text.setAttribute('style', 'cursor: pointer; user-select: none;');
+            text.setAttribute('style', 'cursor: none; user-select: none;');
             text.textContent = displayLabel;
             
             svg.appendChild(text);
@@ -1784,7 +1785,7 @@ function renderRearranged() {
             text.setAttribute('font-family', 'monospace');
             text.setAttribute('font-weight', isJohnOrCage ? 'bold' : 'normal');
             text.setAttribute('class', 'work-label');
-            text.setAttribute('style', 'cursor: default; user-select: none; pointer-events: none;');
+            text.setAttribute('style', 'cursor: none; user-select: none; pointer-events: none;');
             text.textContent = displayLabel;
             svg.appendChild(text);
         }
@@ -1879,8 +1880,8 @@ function render() {
         clickArea.setAttribute('width', bbox.width + 40);
         clickArea.setAttribute('height', bbox.height + 40);
         clickArea.setAttribute('fill', 'transparent');
-        clickArea.setAttribute('cursor', 'pointer');
-        clickArea.setAttribute('style', 'pointer-events: all;');
+        clickArea.setAttribute('cursor', 'none');
+        clickArea.setAttribute('style', 'pointer-events: all; cursor: none;');
         
         // Store reference to text for hover effect
         const textElement = text;
@@ -1911,13 +1912,23 @@ function render() {
         svg.insertBefore(clickArea, text);
     });
     
-    // Render cursor
+    updateCursorElement();
+}
+
+function updateCursorElement() {
+    const cursorEl = document.querySelector('.cursor');
+    if (!cursorEl) return;
+
     if (state.cursor) {
-        const cursorEl = document.querySelector('.cursor');
-        if (cursorEl) {
-            cursorEl.style.left = (state.cursor[0] * state.cellSize[0]) + 'px';
-            cursorEl.style.top = (state.cursor[1] * state.cellSize[1]) + 'px';
-        }
+        cursorEl.style.display = 'block';
+        cursorEl.style.left = (state.cursor[0] * state.cellSize[0]) + 'px';
+        cursorEl.style.top = (state.cursor[1] * state.cellSize[1]) + 'px';
+    } else if (state.cursorPixel) {
+        cursorEl.style.display = 'block';
+        cursorEl.style.left = state.cursorPixel[0] + 'px';
+        cursorEl.style.top = state.cursorPixel[1] + 'px';
+    } else {
+        cursorEl.style.display = 'none';
     }
 }
 
@@ -1998,22 +2009,55 @@ function setupMouse() {
         }
     });
     
-    container.addEventListener('mousemove', (e) => {
-        // Don't update cursor in rearranged mode
-        if (state.isRearranged) return;
-        
-        const pos = getGridPosition(e);
-        
-        // Don't show cursor outside grid
-        if (!pos) {
+    const updateCursorFromEvent = (e) => {
+        // During floating-John intro, the SVG green point is already the cursor
+        if (typeof johnFloatingActive !== 'undefined' && johnFloatingActive) {
             state.cursor = null;
-            render();
+            state.cursorPixel = null;
+            updateCursorElement();
             return;
         }
-        
-        const exists = state.points.some(p => p[0] === pos[0] && p[1] === pos[1]);
-        state.cursor = exists ? null : pos;
-        render();
+
+        const rect = container.getBoundingClientRect();
+        const pixelX = e.clientX - rect.left;
+        const pixelY = e.clientY - rect.top;
+
+        // Always keep the green point visible while the pointer is over the main area
+        if (pixelX < 0 || pixelY < 0 || pixelX > rect.width || pixelY > rect.height) {
+            state.cursor = null;
+            state.cursorPixel = null;
+            updateCursorElement();
+            return;
+        }
+
+        if (state.isRearranged) {
+            // Free-follow green point in rearranged / detail views
+            state.cursor = null;
+            state.cursorPixel = [pixelX, pixelY];
+            updateCursorElement();
+            return;
+        }
+
+        const pos = getGridPosition(e);
+        if (!pos) {
+            state.cursor = null;
+            state.cursorPixel = [pixelX, pixelY];
+            updateCursorElement();
+            return;
+        }
+
+        // Snap to grid cell — stay green even over existing points
+        state.cursorPixel = null;
+        state.cursor = pos;
+        updateCursorElement();
+    };
+
+    container.addEventListener('mousemove', updateCursorFromEvent);
+
+    container.addEventListener('mouseleave', () => {
+        state.cursor = null;
+        state.cursorPixel = null;
+        updateCursorElement();
     });
 }
 
